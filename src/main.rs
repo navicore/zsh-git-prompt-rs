@@ -28,8 +28,8 @@ fn main() {
     // Step 1: Read git status from stdin
     let mut input = String::new();
     if io::stdin().read_to_string(&mut input).is_err() {
-        eprintln!("Failed to read input");
-        std::process::exit(1);
+        //eprintln!("Failed to read input");
+        std::process::exit(0);
     }
 
     // Step 2: Parse the branch information
@@ -66,15 +66,15 @@ fn main() {
                 branch_name,      // Branch name
                 ahead,            // Ahead
                 behind,           // Behind
+                status.changed,   // Changed
                 status.staged,    // Staged
                 status.conflict,  // Conflict
-                status.changed,   // Changed
                 status.untracked, // Untracked
             );
         }
         _ => {
-            eprintln!("Failed to parse git status or branch information");
-            std::process::exit(1);
+            //eprintln!("Failed to parse git status or branch information");
+            std::process::exit(0);
         }
     }
 }

@@ -1,7 +1,5 @@
 # To install source this file from your .zshrc file
 
-export __GIT_PROMPT_DIR=${0:A:h}
-
 # Initialize colors.
 autoload -U colors
 colors
@@ -39,7 +37,7 @@ function update_current_git_vars() {
   unset __CURRENT_GIT_STATUS
 
   # ejs todo: where is the rust executable / bin dir?
-  _GIT_STATUS=`git status --porcelain --branch &> /dev/null | $__GIT_PROMPT_DIR/src/.bin/gitstatus`
+  _GIT_STATUS=`git status --porcelain --branch &> /dev/null | gitstatus`
   __CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
   GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
   GIT_AHEAD=$__CURRENT_GIT_STATUS[2]

@@ -13,6 +13,8 @@ repository = "https://github.com/navicore/zsh-git-prompt-rs"
 name = "gitstatus"
 path = "src/main.rs"
 
+include = ["src/**", "scripts/zshrc.sh", "Cargo.toml", "README.md"]
+
 [dependencies]
 nom = "7.1.3"
 
