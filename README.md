@@ -16,3 +16,4 @@ in your zsh init
 ```zsh
 source <THIS_REPO>/scripts/zshrc.sh
 ```
+see me
