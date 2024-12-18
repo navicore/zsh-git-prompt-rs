@@ -207,7 +207,7 @@ mod tests {
         assert_eq!(status.untracked, 0);
     }
 
-    //#[test]
+    //#[test]  BROKEN TEST - so far fixing this breaks other tests
     fn test_mixed_changes() {
         let lines = [
             "M  file1.txt", // Changed
