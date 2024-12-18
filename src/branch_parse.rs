@@ -3,67 +3,78 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
     character::complete::{digit1, space0},
-    combinator::{map, map_res, opt},
+    combinator::{map_res, opt},
     sequence::{preceded, separated_pair, tuple},
     IResult,
 };
 
-fn parse_distance(input: &str) -> IResult<&str, Distance> {
-    let (input, distance) = alt((
-        map(
-            preceded(
-                tag("[ahead "),
-                separated_pair(
-                    map_res(digit1, |s: &str| {
-                        s.parse::<i32>()
-                            .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
-                    }),
-                    tag(", behind "),
-                    map_res(digit1, |s: &str| {
-                        s.parse::<i32>()
-                            .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
-                    }),
-                ),
-            ),
-            |(ahead, behind)| Distance::AheadBehind(ahead, behind),
+fn parse_ahead_behind(input: &str) -> IResult<&str, Distance> {
+    let (input, (ahead, behind)) = preceded(
+        tag("[ahead "),
+        separated_pair(
+            map_res(digit1, |s: &str| {
+                s.parse::<i32>()
+                    .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
+            }),
+            tag(", behind "),
+            map_res(digit1, |s: &str| {
+                s.parse::<i32>()
+                    .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
+            }),
         ),
-        map_res(preceded(tag("[ahead "), digit1), |s: &str| {
+    )(input)?;
+    Ok((input, Distance::AheadBehind(ahead, behind)))
+}
+
+fn parse_ahead(input: &str) -> IResult<&str, Distance> {
+    let (input, ahead) = preceded(
+        tag("[ahead "),
+        map_res(digit1, |s: &str| {
             s.parse::<i32>()
-                .map(Distance::Ahead)
                 .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
         }),
-        map_res(preceded(tag("[behind "), digit1), |s: &str| {
+    )(input)?;
+    Ok((input, Distance::Ahead(ahead)))
+}
+
+fn parse_behind(input: &str) -> IResult<&str, Distance> {
+    let (input, behind) = preceded(
+        tag("[behind "),
+        map_res(digit1, |s: &str| {
             s.parse::<i32>()
-                .map(Distance::Behind)
                 .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
         }),
-    ))(input)?;
+    )(input)?;
+    Ok((input, Distance::Behind(behind)))
+}
+
+fn parse_distance(input: &str) -> IResult<&str, Distance> {
+    let (input, distance) = alt((parse_ahead_behind, parse_ahead, parse_behind))(input)?;
 
     Ok((input, distance))
 }
 
-fn branch_parser(input: &str) -> IResult<&str, BranchInfo> {
-    let (input, _) = tag("## ")(input)?; // Consume the "## " prefix
-
+fn parse_branch_name(input: &str) -> IResult<&str, Branch> {
     let (input, branch_name) = if let Ok((remaining_input, branch_name)) =
         take_until::<_, _, nom::error::Error<&str>>("...")(input)
     {
         (remaining_input, branch_name)
     } else {
-        // Fall back to capturing the rest of the input
         let (remaining_input, branch_name) =
             nom::combinator::rest::<_, nom::error::Error<&str>>(input)?;
         (remaining_input, branch_name)
     };
 
     let branch_name = branch_name.trim();
-
     let branch = branch_name.strip_prefix("Initial commit on").map_or_else(
         || Branch(branch_name.to_string()),
         |stripped| Branch(stripped.trim().to_string()),
     );
 
-    // Parse optional remote tracking info
+    Ok((input, branch))
+}
+
+fn parse_remote_info(input: &str) -> IResult<&str, Option<Remote>> {
     let (input, remote_info) = opt(preceded(
         tag("..."),
         tuple((
@@ -77,6 +88,15 @@ fn branch_parser(input: &str) -> IResult<&str, BranchInfo> {
         branch: Branch(remote_branch.trim().to_string()),
         distance,
     });
+
+    Ok((input, remote))
+}
+
+fn branch_parser(input: &str) -> IResult<&str, BranchInfo> {
+    let (input, _) = tag("## ")(input)?; // Consume the "## " prefix
+
+    let (input, branch) = parse_branch_name(input)?;
+    let (input, remote) = parse_remote_info(input)?;
 
     Ok((input, BranchInfo { branch, remote }))
 }
