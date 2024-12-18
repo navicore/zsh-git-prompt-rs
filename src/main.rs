@@ -61,14 +61,14 @@ fn main() {
                 .unwrap_or((0, 0));
 
             // Print space-delimited fields: branch name, counts, ahead/behind
-            println!(
+            print!(
                 "{} {} {} {} {} {} {}",
                 branch_name,      // Branch name
                 ahead,            // Ahead
                 behind,           // Behind
-                status.changed,   // Changed
                 status.staged,    // Staged
                 status.conflict,  // Conflict
+                status.changed,   // Changed
                 status.untracked, // Untracked
             );
         }
