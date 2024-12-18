@@ -2,6 +2,17 @@
 name = "zsh-git-prompt-rs"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+authors = ["Ed Sweeney <ed@onextent.com>"]
+description = "A git status prompt for zsh written in Rust"
+keywords = ["zsh", "git"]
+documentation = "https://docs.rs/zsh-git-prompt-rs"
+repository = "https://github.com/navicore/zsh-git-prompt-rs"
+
+[[bin]]
+name = "gitstatus"
+path = "src/main.rs"
 
 [dependencies]
 nom = "7.1.3"
+
