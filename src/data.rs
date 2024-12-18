@@ -1,22 +1,22 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Hash(pub String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Branch(pub String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Remote {
     pub branch: Branch,
     pub distance: Option<Distance>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct BranchInfo {
     pub branch: Branch,
     pub remote: Option<Remote>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Distance {
     Ahead(i32),
     Behind(i32),
@@ -27,9 +27,9 @@ pub enum Distance {
 impl std::fmt::Display for Distance {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Distance::Ahead(n) => write!(f, "[ahead {}]", n),
-            Distance::Behind(n) => write!(f, "[behind {}]", n),
-            Distance::AheadBehind(a, b) => write!(f, "[ahead {}, behind {}]", a, b),
+            Self::Ahead(n) => write!(f, "[ahead {n}]"),
+            Self::Behind(n) => write!(f, "[behind {n}]"),
+            Self::AheadBehind(a, b) => write!(f, "[ahead {a}, behind {b}]"),
         }
     }
 }

@@ -1,28 +1,11 @@
 use std::io::{self, Read};
-use std::process::Command;
 
 mod branch_parse;
 mod data;
 mod status_parse;
 
 use branch_parse::parse_branch;
-use data::Hash;
 use status_parse::Status;
-
-/// Run a command and return its output if successful.
-fn run_command(cmd: &str, args: &[&str]) -> Option<String> {
-    let output = Command::new(cmd).args(args).output().ok()?;
-    if output.status.success() {
-        Some(String::from_utf8_lossy(&output.stdout).trim().to_string())
-    } else {
-        None
-    }
-}
-
-/// Get the current git hash lazily.
-fn git_rev_parse() -> Option<Hash> {
-    run_command("git", &["rev-parse", "--short", "HEAD"]).map(|rev| Hash(rev))
-}
 
 fn main() {
     // Step 1: Read git status from stdin
@@ -34,10 +17,10 @@ fn main() {
     // Step 2: Parse the branch information
     let mut lines = input.lines();
     let branch_line = lines.next();
-    let branch_info = branch_line.and_then(|line| parse_branch(line));
+    let branch_info = branch_line.and_then(parse_branch);
 
     // Step 3: Get the git hash lazily
-    let mhash = git_rev_parse();
+    //let _mhash = git_rev_parse();
 
     // Step 4: Parse the remaining status lines
     let status_lines: Vec<&str> = lines.collect();
@@ -45,7 +28,7 @@ fn main() {
 
     // Step 5: Format and output the result
     match (branch_info, status_result) {
-        (Some(branch_info), Some(status)) => {
+        (Some(branch_info), status) => {
             let branch_name = branch_info.branch.0;
             let (ahead, behind) = branch_info
                 .remote

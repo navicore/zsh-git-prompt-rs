@@ -57,8 +57,8 @@ fn branch_parser(input: &str) -> IResult<&str, BranchInfo> {
     };
 
     let branch_name = branch_name.trim();
-    let branch = if branch_name.starts_with("Initial commit on ") {
-        Branch(branch_name["Initial commit on ".len()..].to_string())
+    let branch = if let Some(stripped) = branch_name.strip_prefix("Initial commit on") {
+        Branch(stripped.trim().to_string())
     } else {
         Branch(branch_name.to_string())
     };
