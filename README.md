@@ -16,4 +16,8 @@ in your zsh init
 ```zsh
 source <THIS_REPO>/scripts/zshrc.sh
 ```
-see me
+
+# TODO
+
+* Seems correct but real merge conflicts still need to be tested
+
