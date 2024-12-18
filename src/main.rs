@@ -28,7 +28,6 @@ fn main() {
     // Step 1: Read git status from stdin
     let mut input = String::new();
     if io::stdin().read_to_string(&mut input).is_err() {
-        //eprintln!("Failed to read input");
         std::process::exit(0);
     }
 
@@ -73,7 +72,6 @@ fn main() {
             );
         }
         _ => {
-            //eprintln!("Failed to parse git status or branch information");
             std::process::exit(0);
         }
     }
