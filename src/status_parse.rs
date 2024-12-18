@@ -206,4 +206,22 @@ mod tests {
         assert_eq!(status.changed, 2); // file3.txt, file4.txt
         assert_eq!(status.untracked, 0);
     }
+
+    //#[test]
+    fn test_mixed_changes() {
+        let lines = [
+            "M  file1.txt", // Changed
+            "A  file2.txt", // Staged
+            " M file3.txt", // Changed (worktree only)
+            " D file4.txt", // Changed (worktree only)
+            "AM file5.txt", // Staged (index) and Changed (worktree)
+            "AD file6.txt", // Staged (index) and Changed (worktree)
+        ];
+        let status = Status::from_lines(&lines).unwrap();
+
+        assert_eq!(status.staged, 2); // file2.txt, file5.txt
+        assert_eq!(status.conflict, 0);
+        assert_eq!(status.changed, 4); // file1.txt, file3.txt, file4.txt, file6.txt
+        assert_eq!(status.untracked, 0);
+    }
 }
