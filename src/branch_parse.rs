@@ -1,39 +1,73 @@
 use crate::data::*;
 use nom::{
+    branch::alt,
     bytes::complete::{tag, take_until},
     character::complete::{digit1, space0},
-    combinator::{map_res, opt, rest},
-    error::Error as NomError, // Explicit error type
+    combinator::{map, map_res, opt},
     sequence::{preceded, separated_pair, tuple},
-    IResult,
 };
+use nom::{combinator::rest, error::Error as NomError, IResult};
 
-pub fn parse_branch(input: &str) -> Option<BranchInfo> {
-    match branch_parser(input) {
-        Ok((_, bi)) => Some(bi),
-        _ => None,
-    }
+fn parse_distance(input: &str) -> IResult<&str, Distance> {
+    let (input, distance) = alt((
+        map(
+            preceded(
+                tag("[ahead "),
+                separated_pair(
+                    map_res(digit1, |s: &str| {
+                        s.parse::<i32>()
+                            .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
+                    }),
+                    tag(", behind "),
+                    map_res(digit1, |s: &str| {
+                        s.parse::<i32>()
+                            .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
+                    }),
+                ),
+            ),
+            |(ahead, behind)| Distance::AheadBehind(ahead, behind),
+        ),
+        map_res(preceded(tag("[ahead "), digit1), |s: &str| {
+            s.parse::<i32>()
+                .map(Distance::Ahead)
+                .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
+        }),
+        map_res(preceded(tag("[behind "), digit1), |s: &str| {
+            s.parse::<i32>()
+                .map(Distance::Behind)
+                .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
+        }),
+    ))(input)?;
+
+    Ok((input, distance))
 }
 
-fn branch_parser(input: &str) -> IResult<&str, BranchInfo, NomError<&str>> {
+fn branch_parser(input: &str) -> IResult<&str, BranchInfo> {
     let (input, _) = tag("## ")(input)?; // Consume the "## " prefix
 
     // Try parsing branch with remote or branch-only
-    let (input, branch_name) = match take_until::<_, _, NomError<&str>>("...")(input) {
+    let (input, branch_name) = match take_until::<_, _, nom::error::Error<&str>>("...")(input) {
         Ok((remaining_input, branch_name)) => (remaining_input, branch_name),
         Err(_) => {
             // Fall back to capturing the rest of the input
-            let (remaining_input, branch_name) = rest::<_, NomError<&str>>(input)?;
+            let (remaining_input, branch_name) =
+                nom::combinator::rest::<_, nom::error::Error<&str>>(input)?;
             (remaining_input, branch_name)
         }
     };
-    let branch = Branch(branch_name.trim().to_string());
+
+    let branch_name = branch_name.trim();
+    let branch = if branch_name.starts_with("Initial commit on ") {
+        Branch(branch_name["Initial commit on ".len()..].to_string())
+    } else {
+        Branch(branch_name.to_string())
+    };
 
     // Parse optional remote tracking info
     let (input, remote_info) = opt(preceded(
         tag("..."),
         tuple((
-            take_until::<_, _, NomError<&str>>(" "), // Remote branch name
+            take_until::<_, _, nom::error::Error<&str>>(" "), // Remote branch name
             space0,
             opt(parse_distance), // Optional distance
         )),
@@ -47,13 +81,11 @@ fn branch_parser(input: &str) -> IResult<&str, BranchInfo, NomError<&str>> {
     Ok((input, BranchInfo { branch, remote }))
 }
 
-fn parse_distance(input: &str) -> IResult<&str, Distance, NomError<&str>> {
-    let (input, (ahead, behind)) = separated_pair(
-        map_res(preceded(tag("[ahead "), digit1), str::parse::<i32>),
-        tag(", behind "),
-        map_res(preceded(space0, digit1), str::parse::<i32>),
-    )(input)?;
-    Ok((input, Distance::AheadBehind(ahead, behind)))
+pub fn parse_branch(input: &str) -> Option<BranchInfo> {
+    match branch_parser(input) {
+        Ok((_, bi)) => Some(bi),
+        _ => None,
+    }
 }
 
 #[cfg(test)]

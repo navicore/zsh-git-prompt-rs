@@ -1,22 +1,22 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Hash(pub String);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Branch(pub String);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Remote {
     pub branch: Branch,
     pub distance: Option<Distance>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct BranchInfo {
     pub branch: Branch,
     pub remote: Option<Remote>,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Distance {
     Ahead(i32),
     Behind(i32),
