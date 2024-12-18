@@ -114,4 +114,96 @@ mod tests {
         assert_eq!(status.changed, 0);
         assert_eq!(status.untracked, 1); // Only "??" should count
     }
+
+    #[test]
+    fn test_mixed_lines() {
+        let lines = [
+            "M  file1.txt", // Changed
+            "invalid line", // Invalid
+            "A  file2.txt", // Staged
+            "?? file3.txt", // Untracked
+            "  ",           // Blank line
+            "DU file4.txt", // Conflict
+        ];
+        let status = Status::from_lines(&lines).unwrap();
+
+        assert_eq!(status.staged, 1);
+        assert_eq!(status.conflict, 1);
+        assert_eq!(status.changed, 1);
+        assert_eq!(status.untracked, 1);
+    }
+
+    #[test]
+    fn test_multiple_files_per_status() {
+        let lines = [
+            "M  file1.txt", // Changed
+            "M  file2.txt", // Changed
+            "A  file3.txt", // Staged
+            "A  file4.txt", // Staged
+            "?? file5.txt", // Untracked
+            "?? file6.txt", // Untracked
+            "DU file7.txt", // Conflict
+            "DU file8.txt", // Conflict
+        ];
+        let status = Status::from_lines(&lines).unwrap();
+
+        assert_eq!(status.staged, 2);
+        assert_eq!(status.conflict, 2);
+        assert_eq!(status.changed, 2);
+        assert_eq!(status.untracked, 2);
+    }
+
+    #[test]
+    fn test_edge_cases_for_conflicts() {
+        let lines = [
+            "UU file1.txt", // Conflict
+            "DD file2.txt", // Conflict
+            "DU file3.txt", // Conflict
+            "UD file4.txt", // Conflict
+        ];
+        let status = Status::from_lines(&lines).unwrap();
+
+        assert_eq!(status.staged, 0);
+        assert_eq!(status.conflict, 4);
+        assert_eq!(status.changed, 0);
+        assert_eq!(status.untracked, 0);
+    }
+
+    #[test]
+    fn test_only_invalid_lines() {
+        let lines = ["invalid line 1", "invalid line 2", "", "   "];
+        let status = Status::from_lines(&lines).unwrap();
+
+        assert_eq!(status.staged, 0);
+        assert_eq!(status.conflict, 0);
+        assert_eq!(status.changed, 0);
+        assert_eq!(status.untracked, 0);
+    }
+
+    #[test]
+    fn test_no_lines() {
+        let lines: [&str; 0] = [];
+        let status = Status::from_lines(&lines).unwrap();
+
+        assert_eq!(status.staged, 0);
+        assert_eq!(status.conflict, 0);
+        assert_eq!(status.changed, 0);
+        assert_eq!(status.untracked, 0);
+    }
+
+    #[test]
+    fn test_rare_status_combinations() {
+        let lines = [
+            "R  file1.txt", // Staged (renamed)
+            "C  file2.txt", // Staged (copied)
+            "RM file3.txt", // Staged (renamed) and Changed (worktree)
+            "CM file4.txt", // Staged (copied) and Changed (worktree)
+        ];
+        let status = Status::from_lines(&lines).unwrap();
+
+        assert_eq!(status.staged, 2); // file1.txt, file2.txt
+        assert_eq!(status.conflict, 0);
+        assert_eq!(status.changed, 2); // file3.txt, file4.txt
+        assert_eq!(status.untracked, 0);
+    }
 }
