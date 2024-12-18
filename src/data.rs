@@ -16,7 +16,7 @@ pub struct BranchInfo {
     pub remote: Option<Remote>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Distance {
     Ahead(i32),
     Behind(i32),

@@ -61,18 +61,85 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_branch_with_remote() {
+    fn test_branch_with_remote_ahead_behind() {
         let input = "## main...origin/main [ahead 3, behind 2]";
         let result = branch_parser(input).unwrap().1;
+
         assert_eq!(result.branch.0, "main");
         assert!(result.remote.is_some());
+
+        let remote = result.remote.unwrap();
+        assert_eq!(remote.branch.0, "origin/main");
+        assert_eq!(remote.distance, Some(Distance::AheadBehind(3, 2)));
+    }
+
+    #[test]
+    fn test_branch_with_remote_only_ahead() {
+        let input = "## main...origin/main [ahead 5]";
+        let result = branch_parser(input).unwrap().1;
+
+        assert_eq!(result.branch.0, "main");
+        assert!(result.remote.is_some());
+
+        let remote = result.remote.unwrap();
+        assert_eq!(remote.branch.0, "origin/main");
+        assert_eq!(remote.distance, Some(Distance::Ahead(5)));
+    }
+
+    #[test]
+    fn test_branch_with_remote_only_behind() {
+        let input = "## main...origin/main [behind 4]";
+        let result = branch_parser(input).unwrap().1;
+
+        assert_eq!(result.branch.0, "main");
+        assert!(result.remote.is_some());
+
+        let remote = result.remote.unwrap();
+        assert_eq!(remote.branch.0, "origin/main");
+        assert_eq!(remote.distance, Some(Distance::Behind(4)));
     }
 
     #[test]
     fn test_branch_only() {
         let input = "## feature-branch";
         let result = branch_parser(input).unwrap().1;
+
         assert_eq!(result.branch.0, "feature-branch");
+        assert!(result.remote.is_none());
+    }
+
+    #[test]
+    fn test_branch_with_initial_commit() {
+        let input = "## Initial commit on main";
+        let result = branch_parser(input).unwrap().1;
+
+        assert_eq!(result.branch.0, "main");
+        assert!(result.remote.is_none());
+    }
+
+    #[test]
+    fn test_no_branch() {
+        let input = "## (no branch)";
+        let result = branch_parser(input).unwrap().1;
+
+        assert_eq!(result.branch.0, "(no branch)");
+        assert!(result.remote.is_none());
+    }
+
+    #[test]
+    fn test_invalid_branch_format() {
+        let input = "invalid format";
+        let result = branch_parser(input);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_branch_with_no_remote_tracking() {
+        let input = "## main...";
+        let result = branch_parser(input).unwrap().1;
+
+        assert_eq!(result.branch.0, "main");
         assert!(result.remote.is_none());
     }
 }
