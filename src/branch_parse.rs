@@ -1,12 +1,12 @@
-use crate::data::*;
+use crate::data::{Branch, BranchInfo, Distance, Remote};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
     character::complete::{digit1, space0},
     combinator::{map, map_res, opt},
     sequence::{preceded, separated_pair, tuple},
+    IResult,
 };
-use nom::{combinator::rest, error::Error as NomError, IResult};
 
 fn parse_distance(input: &str) -> IResult<&str, Distance> {
     let (input, distance) = alt((
@@ -45,23 +45,23 @@ fn parse_distance(input: &str) -> IResult<&str, Distance> {
 fn branch_parser(input: &str) -> IResult<&str, BranchInfo> {
     let (input, _) = tag("## ")(input)?; // Consume the "## " prefix
 
-    // Try parsing branch with remote or branch-only
-    let (input, branch_name) = match take_until::<_, _, nom::error::Error<&str>>("...")(input) {
-        Ok((remaining_input, branch_name)) => (remaining_input, branch_name),
-        Err(_) => {
-            // Fall back to capturing the rest of the input
-            let (remaining_input, branch_name) =
-                nom::combinator::rest::<_, nom::error::Error<&str>>(input)?;
-            (remaining_input, branch_name)
-        }
+    let (input, branch_name) = if let Ok((remaining_input, branch_name)) =
+        take_until::<_, _, nom::error::Error<&str>>("...")(input)
+    {
+        (remaining_input, branch_name)
+    } else {
+        // Fall back to capturing the rest of the input
+        let (remaining_input, branch_name) =
+            nom::combinator::rest::<_, nom::error::Error<&str>>(input)?;
+        (remaining_input, branch_name)
     };
 
     let branch_name = branch_name.trim();
-    let branch = if let Some(stripped) = branch_name.strip_prefix("Initial commit on") {
-        Branch(stripped.trim().to_string())
-    } else {
-        Branch(branch_name.to_string())
-    };
+
+    let branch = branch_name.strip_prefix("Initial commit on").map_or_else(
+        || Branch(branch_name.to_string()),
+        |stripped| Branch(stripped.trim().to_string()),
+    );
 
     // Parse optional remote tracking info
     let (input, remote_info) = opt(preceded(
