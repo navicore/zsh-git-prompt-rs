@@ -11,15 +11,6 @@ impl Status {
         let mut status = Status::default();
         for line in lines {
             if let Some(ms) = MiniStatus::from_str(line) {
-                println!(
-                    "Parsing {:?}: is_staged: {}, is_conflict: {}, is_changed: {}, is_untracked: {}",
-                    ms,
-                    ms.is_staged(),
-                    ms.is_conflict(),
-                    ms.is_changed(),
-                    ms.is_untracked()
-                );
-
                 if ms.is_changed() {
                     status.changed += 1;
                 }
@@ -32,11 +23,8 @@ impl Status {
                 if ms.is_untracked() {
                     status.untracked += 1;
                 }
-            } else {
-                println!("Ignoring invalid line: {:?}", line);
             }
         }
-        println!("Final Status: {:?}", status);
         Some(status)
     }
 }
