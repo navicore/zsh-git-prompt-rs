@@ -1,6 +1,6 @@
 [package]
 name = "gitstatus"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 license = "MIT"
 authors = ["Ed Sweeney <ed@onextent.com>"]
@@ -17,4 +17,3 @@ include = ["src/**", "scripts/zshrc.sh", "Cargo.toml", "README.md"]
 
 [dependencies]
 nom = "7.1.3"
-
