@@ -1,3 +1,4 @@
+use std::env;
 use std::io::{self, Read};
 
 mod branch_parse;
@@ -7,7 +8,18 @@ mod status_parse;
 use branch_parse::parse_branch;
 use status_parse::Status;
 
+// Include the script file as a static string
+const ZSHRC_SCRIPT: &str = include_str!("resources/zshrc.sh");
+
 fn main() {
+    // Check for the --script argument
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 1 && args[1] == "--script" {
+        // Print the content of the script to stdout
+        println!("{ZSHRC_SCRIPT}");
+        return;
+    }
+
     // Step 1: Read git status from stdin
     let mut input = String::new();
     if io::stdin().read_to_string(&mut input).is_err() {
