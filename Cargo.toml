@@ -8,6 +8,7 @@ description = "A git status prompt for zsh written in Rust"
 keywords = ["zsh", "git"]
 documentation = "https://docs.rs/zsh-git-prompt-rs"
 repository = "https://github.com/navicore/zsh-git-prompt-rs"
+build = "build.rs"
 
 [[bin]]
 name = "gitstatus"
