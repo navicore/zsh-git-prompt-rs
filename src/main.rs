@@ -14,10 +14,30 @@ const ZSHRC_SCRIPT: &str = include_str!("resources/zshrc.sh");
 fn main() {
     // Check for the --script argument
     let args: Vec<String> = env::args().collect();
-    if args.len() > 1 && args[1] == "--script" {
-        // Print the content of the script to stdout
+
+    if args.len() > 1 && (args[1] == "--script" || args[1] == "-s") {
         println!("{ZSHRC_SCRIPT}");
         return;
+    }
+
+    if args.len() > 1 && (args[1] == "-h" || args[1] == "--help") {
+        println!(
+            r#"
+            Usage: gitstatus --script
+
+            Will return a zshrc.sh script you should source
+            in your zsh init scirpt ahead of customizing.
+
+            See README.md for more info.
+            "#
+        );
+        return;
+    }
+
+    if args.len() > 1 {
+        println!("Invalid argument: {}", args[1]);
+        // exit with error
+        std::process::exit(1);
     }
 
     // Step 1: Read git status from stdin
