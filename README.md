@@ -53,4 +53,5 @@ ZSH_THEME_GIT_PROMPT_CLEAN=""
 # TODO
 
 * Seems correct but real merge conflicts still need to be tested
+* Actually seems buggy - need more definition around the blue dot vs yellow +
 
