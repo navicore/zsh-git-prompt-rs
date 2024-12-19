@@ -16,7 +16,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--script" {
         // Print the content of the script to stdout
-        println!("{}", ZSHRC_SCRIPT);
+        println!("{ZSHRC_SCRIPT}");
         return;
     }
 
