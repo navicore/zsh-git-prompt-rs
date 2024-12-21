@@ -55,10 +55,15 @@ fn parse_distance(input: &str) -> IResult<&str, Distance> {
 }
 
 fn parse_branch_name(input: &str) -> IResult<&str, Branch> {
+    let input = input.trim_start(); // Remove leading whitespace
+    let input = input.strip_prefix("## ").unwrap_or(input); // Strip "## " prefix if present
+
     let (input, branch_name) = if let Ok((remaining_input, branch_name)) =
         take_until::<_, _, nom::error::Error<&str>>("...")(input)
     {
         (remaining_input, branch_name)
+    } else if let Some(prefix) = input.strip_prefix("No commits yet on ") {
+        return Ok(("", Branch(prefix.trim().to_string())));
     } else {
         let (remaining_input, branch_name) =
             nom::combinator::rest::<_, nom::error::Error<&str>>(input)?;
@@ -78,20 +83,21 @@ fn parse_remote_info(input: &str) -> IResult<&str, Option<Remote>> {
     let (input, remote_info) = opt(preceded(
         tag("..."),
         tuple((
-            take_until::<_, _, nom::error::Error<&str>>(" "), // Remote branch name
+            opt(take_until::<_, _, nom::error::Error<&str>>(" ")), // Optional remote branch name
             space0,
             opt(parse_distance), // Optional distance
         )),
     ))(input)?;
 
-    let remote = remote_info.map(|(remote_branch, _, distance)| Remote {
-        branch: Branch(remote_branch.trim().to_string()),
-        distance,
+    let remote = remote_info.and_then(|(remote_branch, _, distance)| {
+        remote_branch.map(|branch| Remote {
+            branch: Branch(branch.trim().to_string()),
+            distance,
+        })
     });
 
     Ok((input, remote))
 }
-
 fn branch_parser(input: &str) -> IResult<&str, BranchInfo> {
     let (input, _) = tag("## ")(input)?; // Consume the "## " prefix
 
@@ -193,5 +199,21 @@ mod tests {
 
         assert_eq!(result.branch.0, "main");
         assert!(result.remote.is_none());
+    }
+
+    #[test]
+    fn test_branch_with_no_commits_yet() {
+        let input = "## No commits yet on main";
+        let result = parse_branch_name(input).unwrap().1;
+
+        assert_eq!(result, Branch("main".to_string()));
+    }
+
+    #[test]
+    fn test_branch_with_commits() {
+        let input = "## main...origin/main";
+        let result = parse_branch_name(input).unwrap().1;
+
+        assert_eq!(result, Branch("main".to_string()));
     }
 }
