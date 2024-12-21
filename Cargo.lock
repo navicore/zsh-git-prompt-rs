@@ -26,7 +26,7 @@ dependencies = [
 
 [[package]]
 name = "zsh-git-prompt-rs"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "nom",
 ]
