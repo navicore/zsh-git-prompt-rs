@@ -14,5 +14,5 @@ name = "gitstatus"
 path = "src/main.rs"
 
 [dependencies]
-nom = "7.1.3"
+nom = "8.0.0"
 
