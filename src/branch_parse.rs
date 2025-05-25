@@ -4,52 +4,40 @@ use nom::{
     bytes::complete::{tag, take_until},
     character::complete::{digit1, space0},
     combinator::{map_res, opt},
-    sequence::{preceded, separated_pair, tuple},
-    IResult,
+    sequence::{preceded, separated_pair},
+    IResult, Parser,
 };
 
 fn parse_ahead_behind(input: &str) -> IResult<&str, Distance> {
     let (input, (ahead, behind)) = preceded(
         tag("[ahead "),
         separated_pair(
-            map_res(digit1, |s: &str| {
-                s.parse::<i32>()
-                    .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
-            }),
+            map_res(digit1, |s: &str| s.parse::<i32>()),
             tag(", behind "),
-            map_res(digit1, |s: &str| {
-                s.parse::<i32>()
-                    .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
-            }),
+            map_res(digit1, |s: &str| s.parse::<i32>()),
         ),
-    )(input)?;
+    ).parse(input)?;
     Ok((input, Distance::AheadBehind(ahead, behind)))
 }
 
 fn parse_ahead(input: &str) -> IResult<&str, Distance> {
     let (input, ahead) = preceded(
         tag("[ahead "),
-        map_res(digit1, |s: &str| {
-            s.parse::<i32>()
-                .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
-        }),
-    )(input)?;
+        map_res(digit1, |s: &str| s.parse::<i32>()),
+    ).parse(input)?;
     Ok((input, Distance::Ahead(ahead)))
 }
 
 fn parse_behind(input: &str) -> IResult<&str, Distance> {
     let (input, behind) = preceded(
         tag("[behind "),
-        map_res(digit1, |s: &str| {
-            s.parse::<i32>()
-                .map_err(|_| nom::Err::Error((input, nom::error::ErrorKind::Digit)))
-        }),
-    )(input)?;
+        map_res(digit1, |s: &str| s.parse::<i32>()),
+    ).parse(input)?;
     Ok((input, Distance::Behind(behind)))
 }
 
 fn parse_distance(input: &str) -> IResult<&str, Distance> {
-    let (input, distance) = alt((parse_ahead_behind, parse_ahead, parse_behind))(input)?;
+    let (input, distance) = alt((parse_ahead_behind, parse_ahead, parse_behind)).parse(input)?;
 
     Ok((input, distance))
 }
@@ -82,12 +70,12 @@ fn parse_branch_name(input: &str) -> IResult<&str, Branch> {
 fn parse_remote_info(input: &str) -> IResult<&str, Option<Remote>> {
     let (input, remote_info) = opt(preceded(
         tag("..."),
-        tuple((
+        (
             opt(take_until::<_, _, nom::error::Error<&str>>(" ")), // Optional remote branch name
             space0,
             opt(parse_distance), // Optional distance
-        )),
-    ))(input)?;
+        ),
+    )).parse(input)?;
 
     let remote = remote_info.and_then(|(remote_branch, _, distance)| {
         remote_branch.map(|branch| Remote {
