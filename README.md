@@ -1,6 +1,12 @@
-zsh prompt origionally implemented by https://github.com/olivierverdier/zsh-git-prompt
+[![Dependabot Updates](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/dependabot/dependabot-updates)
+[![rust-clippy analyze](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/rust-clippy.yml/badge.svg)](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/rust-clippy.yml)
+[![Publish-Crate](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/publish-crates.yml/badge.svg)](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/publish-crates.yml)
 
-I no longer install the haskell toolchain everywhere so am trying to implement that prompt in Rust.
+zsh prompt originally implemented by
+https://github.com/olivierverdier/zsh-git-prompt
+
+I no longer install the Haskell toolchain everywhere so am trying to implement
+that prompt in Rust.
 
 
 ## Installation
@@ -50,8 +56,4 @@ ZSH_THEME_GIT_PROMPT_CLEAN=""
 #
 ```
 
-# TODO
-
-* Seems correct but real merge conflicts still need to be tested
-* Actually seems buggy - need more definition around the blue dot vs yellow +
 
