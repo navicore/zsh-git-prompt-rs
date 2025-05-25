@@ -1,7 +1,7 @@
 [package]
 name = "zsh-git-prompt-rs"
-version = "0.3.6"
-edition = "2021"
+version = "1.0.0"
+edition = "2024"
 license = "MIT"
 authors = ["Ed Sweeney <ed@onextent.com>"]
 description = "A git status prompt for zsh written in Rust"
