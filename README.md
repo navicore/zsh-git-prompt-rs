@@ -41,13 +41,14 @@ if [[ $SESSION_TYPE == 'remote/ssh' ]]; then
   PROMPT_PRE='%n@%m '
 fi
 
-PROMPT='${PROMPT_PRE}%{$fg_bold[cyan]%}$ZSH_THEME_CLOUD_PREFIX %{$fg[green]%}%p %{$fg[green]%}%c %{$fg[cyan]%}$(git_super_status)%{$fg_bold[red]%}% %{$reset_color%}'
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[cyan]%}["
-ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[cyan]%}] "
+PROMPT='${PROMPT_PRE}%{$fg_bold[cyan]%}$ZSH_THEME_CLOUD_PREFIX %{$fg[green]%}%p %{$fg[green]%}%c %{$reset_color%}$(git_super_status)%{$fg_bold[red]%}% %{$reset_color%}'
 
+# Git prompt customization
+ZSH_THEME_GIT_PROMPT_PREFIX=""
+ZSH_THEME_GIT_PROMPT_SUFFIX=" "
 ZSH_THEME_GIT_PROMPT_SEPARATOR=""
 ZSH_THEME_GIT_PROMPT_BRANCH="%{$fg[green]%}"
-ZSH_THEME_GIT_PROMPT_BRANCH_SYMBOL="%{ %G%}"  # nerd font branch icon
+ZSH_THEME_GIT_PROMPT_BRANCH_SYMBOL="%{$fg_bold[cyan]%}%{%G%}"  # nerd font branch icon
 ZSH_THEME_GIT_PROMPT_STAGED="%{$fg[blue]%}%{ ●%G%}"
 ZSH_THEME_GIT_PROMPT_CONFLICTS="%{$fg[red]%}%{ ✖%G%}"
 ZSH_THEME_GIT_PROMPT_CHANGED="%{$fg[yellow]%}%{ ✚%G%}"
