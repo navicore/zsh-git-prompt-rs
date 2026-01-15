@@ -1,5 +1,5 @@
 use std::env;
-use std::io::{self, Read};
+use std::process::Command;
 
 mod branch_parse;
 mod data;
@@ -10,6 +10,31 @@ use status_parse::Status;
 
 // Include the script file as a static string
 const ZSHRC_SCRIPT: &str = include_str!("resources/zshrc.sh");
+
+/// Run git status --porcelain --branch and return the output
+fn git_status() -> Option<String> {
+    Command::new("git")
+        .args(["status", "--porcelain", "--branch"])
+        .output()
+        .ok()
+        .filter(|output| output.status.success())
+        .and_then(|output| String::from_utf8(output.stdout).ok())
+}
+
+/// Count the number of stashes
+fn git_stash_count() -> i32 {
+    Command::new("git")
+        .args(["stash", "list"])
+        .output()
+        .ok()
+        .filter(|output| output.status.success())
+        .map(|output| {
+            String::from_utf8(output.stdout)
+                .map(|s| s.lines().count() as i32)
+                .unwrap_or(0)
+        })
+        .unwrap_or(0)
+}
 
 fn main() {
     // Check for the --script argument
@@ -23,10 +48,10 @@ fn main() {
     if args.len() > 1 && (args[1] == "-h" || args[1] == "--help") {
         println!(
             r#"
-            Usage: gitstatus --script
+            Usage: gitstatus [--script]
 
-            Will return a zshrc.sh script you should source
-            in your zsh init scirpt ahead of customizing.
+            Run with no arguments in a git repository to get status.
+            Use --script to output the zsh integration script.
 
             See README.md for more info.
             "#
@@ -36,27 +61,26 @@ fn main() {
 
     if args.len() > 1 {
         println!("Invalid argument: {}", args[1]);
-        // exit with error
         std::process::exit(1);
     }
 
-    // Step 1: Read git status from stdin
-    let mut input = String::new();
-    if io::stdin().read_to_string(&mut input).is_err() {
-        std::process::exit(0);
-    }
+    // Step 1: Get git status directly
+    let input = match git_status() {
+        Some(s) => s,
+        None => std::process::exit(0), // Not a git repo or git not available
+    };
 
     // Step 2: Parse the branch information
     let mut lines = input.lines();
     let branch_line = lines.next();
     let branch_info = branch_line.and_then(parse_branch);
 
-    // Step 3: Get the git hash lazily
-    //let _mhash = git_rev_parse();
-
-    // Step 4: Parse the remaining status lines
+    // Step 3: Parse the remaining status lines
     let status_lines: Vec<&str> = lines.collect();
     let status_result = Status::from_lines(&status_lines);
+
+    // Step 4: Get stash count
+    let stash_count = git_stash_count();
 
     // Step 5: Format and output the result
     match (branch_info, status_result) {
@@ -74,9 +98,9 @@ fn main() {
                 })
                 .unwrap_or((0, 0));
 
-            // Print space-delimited fields: branch name, counts, ahead/behind
+            // Print space-delimited fields: branch, ahead, behind, staged, conflict, changed, untracked, stash
             print!(
-                "{} {} {} {} {} {} {}",
+                "{} {} {} {} {} {} {} {}",
                 branch_name,      // Branch name
                 ahead,            // Ahead
                 behind,           // Behind
@@ -84,6 +108,7 @@ fn main() {
                 status.conflict,  // Conflict
                 status.changed,   // Changed
                 status.untracked, // Untracked
+                stash_count,      // Stash count
             );
         }
         _ => {

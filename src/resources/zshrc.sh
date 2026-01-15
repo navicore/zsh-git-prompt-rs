@@ -36,7 +36,7 @@ function chpwd_update_git_vars() {
 function update_current_git_vars() {
 	unset __CURRENT_GIT_STATUS
 
-	_GIT_STATUS=`git status --porcelain --branch 2>/dev/null | gitstatus`
+	_GIT_STATUS=$(gitstatus 2>/dev/null)
 	__CURRENT_GIT_STATUS=("${(@s: :)_GIT_STATUS}")
 	GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
 	GIT_AHEAD=$__CURRENT_GIT_STATUS[2]
@@ -45,8 +45,7 @@ function update_current_git_vars() {
 	GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
 	GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
 	GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
-	GIT_STASH=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
-	GIT_STASH=${GIT_STASH:-0}
+	GIT_STASH=$__CURRENT_GIT_STATUS[8]
 }
 
 git_super_status() {
