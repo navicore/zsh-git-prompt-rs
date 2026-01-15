@@ -46,6 +46,7 @@ function update_current_git_vars() {
 	GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
 	GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
 	GIT_STASH=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
+	GIT_STASH=${GIT_STASH:-0}
 }
 
 git_super_status() {
