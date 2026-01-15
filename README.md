@@ -17,9 +17,9 @@ Install `zsh-git-prompt-rs` via `cargo`:
 cargo install zsh-git-prompt-rs
 ```
 
-The default prompt includes Nerd Font icons for the branch symbol and stash indicator.
-If you don't have a [Nerd Font](https://www.nerdfonts.com/) installed, you can override
-`ZSH_THEME_GIT_PROMPT_BRANCH_SYMBOL` and `ZSH_THEME_GIT_PROMPT_STASH` with plain text alternatives.
+The prompt supports optional Nerd Font icons for the branch symbol and stash indicator.
+If you have a [Nerd Font](https://www.nerdfonts.com/) installed, you can enable them by setting
+`ZSH_THEME_GIT_PROMPT_BRANCH_SYMBOL` and `ZSH_THEME_GIT_PROMPT_STASH` as shown in the example below.
 
 In your zsh init
 
@@ -61,4 +61,5 @@ ZSH_THEME_GIT_PROMPT_CLEAN=""
 # END PROMPT
 #
 ```
+
 
