@@ -1,7 +1,4 @@
 #[derive(Debug, Eq, PartialEq)]
-pub struct Hash(pub String);
-
-#[derive(Debug, Eq, PartialEq)]
 pub struct Branch(pub String);
 
 #[derive(Debug, Eq, PartialEq)]
