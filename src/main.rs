@@ -11,14 +11,33 @@ use status_parse::Status;
 // Include the script file as a static string
 const ZSHRC_SCRIPT: &str = include_str!("resources/zshrc.sh");
 
+/// Result of running git status
+enum GitStatusResult {
+    Success(String),
+    NotARepo,
+    Corrupted,
+}
+
 /// Run git status --porcelain --branch and return the output
-fn git_status() -> Option<String> {
-    Command::new("git")
+fn git_status() -> GitStatusResult {
+    match Command::new("git")
         .args(["status", "--porcelain", "--branch"])
         .output()
-        .ok()
-        .filter(|output| output.status.success())
-        .and_then(|output| String::from_utf8(output.stdout).ok())
+    {
+        Ok(output) if output.status.success() => String::from_utf8(output.stdout)
+            .map(GitStatusResult::Success)
+            .unwrap_or(GitStatusResult::NotARepo),
+        Ok(output) => {
+            // Command ran but failed - check if it's a fatal error
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            if stderr.contains("fatal:") && !stderr.contains("not a git repository") {
+                GitStatusResult::Corrupted
+            } else {
+                GitStatusResult::NotARepo
+            }
+        }
+        Err(_) => GitStatusResult::NotARepo,
+    }
 }
 
 /// Count the number of stashes
@@ -28,12 +47,10 @@ fn git_stash_count() -> i32 {
         .output()
         .ok()
         .filter(|output| output.status.success())
-        .map(|output| {
+        .map_or(0, |output| {
             String::from_utf8(output.stdout)
-                .map(|s| s.lines().count() as i32)
-                .unwrap_or(0)
+                .map_or(0, |s| i32::try_from(s.lines().count()).unwrap_or(i32::MAX))
         })
-        .unwrap_or(0)
 }
 
 fn main() {
@@ -47,14 +64,14 @@ fn main() {
 
     if args.len() > 1 && (args[1] == "-h" || args[1] == "--help") {
         println!(
-            r#"
+            r"
             Usage: gitstatus [--script]
 
             Run with no arguments in a git repository to get status.
             Use --script to output the zsh integration script.
 
             See README.md for more info.
-            "#
+            "
         );
         return;
     }
@@ -66,8 +83,13 @@ fn main() {
 
     // Step 1: Get git status directly
     let input = match git_status() {
-        Some(s) => s,
-        None => std::process::exit(0), // Not a git repo or git not available
+        GitStatusResult::Success(s) => s,
+        GitStatusResult::NotARepo => std::process::exit(0), // Not a git repo or git not available
+        GitStatusResult::Corrupted => {
+            // Output special marker for corrupted repo
+            print!("##CORRUPT## 0 0 0 0 0 0 0");
+            return;
+        }
     };
 
     // Step 2: Parse the branch information
