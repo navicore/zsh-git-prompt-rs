@@ -1,3 +1,8 @@
+<!-- ghmig:moved -->
+> **This repository has moved to [https://git.navicore.tech/navicore/zsh-git-prompt-rs](https://git.navicore.tech/navicore/zsh-git-prompt-rs).**
+>
+> The GitHub copy is archived and no longer maintained.
+
 [![Dependabot Updates](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/dependabot/dependabot-updates)
 [![rust-clippy analyze](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/rust-clippy.yml/badge.svg)](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/rust-clippy.yml)
 [![Publish-Crate](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/publish-crates.yml/badge.svg)](https://github.com/navicore/zsh-git-prompt-rs/actions/workflows/publish-crates.yml)
@@ -62,4 +67,3 @@ ZSH_THEME_GIT_PROMPT_CLEAN=""
 # END PROMPT
 #
 ```
-
